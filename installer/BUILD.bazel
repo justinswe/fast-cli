@@ -1,0 +1,30 @@
+load("@rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+
+MODULE_VERSION = module_version()
+
+go_library(
+    name = "installer_lib",
+    srcs = ["main.go"],
+    embedsrcs = ["install.sh"],
+    importpath = "github.com/jfernbaugh/fast-cli/installer",
+    visibility = ["//visibility:private"],
+    deps = [
+        "@com_github_justinswe_std//app",
+        "@com_github_justinswe_std//errors",
+        "@com_github_spf13_cobra//:cobra",
+    ],
+)
+
+go_binary(
+    name = "installer",
+    embed = [":installer_lib"],
+    pure = "on",
+    visibility = ["//visibility:public"],
+    x_defs = {"github.com/jfernbaugh/fast-cli/installer.version": MODULE_VERSION},
+)
+
+go_test(
+    name = "installer_test",
+    srcs = ["main_test.go"],
+    embed = [":installer_lib"],
+)

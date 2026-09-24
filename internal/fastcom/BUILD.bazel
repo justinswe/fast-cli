@@ -11,12 +11,14 @@ go_library(
     ],
     importpath = "github.com/jfernbaugh/fast-cli/internal/fastcom",
     visibility = ["//:__subpackages__"],
+    deps = ["@com_github_justinswe_std//errors"],
 )
 
 go_test(
     name = "fastcom_test",
     srcs = ["fastcom_test.go"],
     embed = [":fastcom"],
+    deps = ["@com_github_justinswe_std//errors"],
 )
 
 # keep: this test contacts fast.com and runs only when selected explicitly.

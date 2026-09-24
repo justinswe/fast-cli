@@ -2,13 +2,14 @@ package fastcom
 
 import (
 	"context"
-	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
+
+	"github.com/justinswe/std/errors"
 )
 
 // bareTransport mimics a RoundTripper that fabricates responses without setting Response.Request.

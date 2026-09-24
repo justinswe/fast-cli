@@ -3,11 +3,11 @@ package fastcom
 import (
 	"context"
 	"encoding/json"
-	"errors"
-	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
+
+	"github.com/justinswe/std/errors"
 )
 
 // APIURL is the fast.com targets endpoint, as configured in the fast.com web app.
@@ -46,7 +46,7 @@ func FetchTargets(ctx context.Context, hc *http.Client, token string, urlCount i
 	}
 	var resp Response
 	if err := json.Unmarshal(body, &resp); err != nil {
-		return nil, fmt.Errorf("fastcom: decode targets response: %w", err)
+		return nil, errors.Errorf("fastcom: decode targets response: %w", err)
 	}
 	kept := resp.Targets[:0]
 	for _, t := range resp.Targets {

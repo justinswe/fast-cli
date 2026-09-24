@@ -3,8 +3,11 @@ module(
     version = "0.1.0",
 )
 
+bazel_dep(name = "bazel_skylib", version = "1.9.2")
 bazel_dep(name = "gazelle", version = "0.54.0")
+bazel_dep(name = "platforms", version = "1.1.0")
 bazel_dep(name = "rules_go", version = "0.63.0")
+bazel_dep(name = "rules_img", version = "0.3.21")
 bazel_dep(name = "toolchains_buildbuddy", version = "0.0.4")
 
 go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
@@ -21,3 +24,16 @@ buildbuddy.platform(buildbuddy_container_image = "UBUNTU24_04_IMAGE")
 use_repo(buildbuddy, "buildbuddy_toolchain")
 
 register_toolchains("@buildbuddy_toolchain//:ubuntu_cc_toolchain")
+
+go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
+go_deps.from_file(go_mod = "//:go.mod")
+use_repo(go_deps, "com_github_justinswe_std", "com_github_spf13_cobra")
+
+pull = use_repo_rule("@rules_img//img:pull.bzl", "pull")
+
+pull(
+    name = "distroless_static",
+    digest = "sha256:2293b36c7c9082bf4115aab724b4d2cddec82c8eba39bf27ac0517e159acf150",
+    registry = "gcr.io",
+    repository = "distroless/static-debian13",
+)

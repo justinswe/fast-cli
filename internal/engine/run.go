@@ -2,13 +2,12 @@ package engine
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"math"
 	"net/http"
 	"time"
 
 	"github.com/jfernbaugh/fast-cli/internal/fastcom"
+	"github.com/justinswe/std/errors"
 )
 
 // engine holds what every phase shares: options, the HTTP client, the run clock and the upload blob.
@@ -56,11 +55,11 @@ func Run(ctx context.Context, opts Options, progress func(Sample)) (*Result, err
 
 	dl, err := e.runTransfer(ctx, PhaseDownload, t)
 	if err != nil {
-		return nil, fmt.Errorf("download: %w", err)
+		return nil, errors.Errorf("download: %w", err)
 	}
 	unloaded, err := e.runLatency(ctx, t)
 	if err != nil {
-		return nil, fmt.Errorf("latency: %w", err)
+		return nil, errors.Errorf("latency: %w", err)
 	}
 	res := &Result{
 		DownloadBps:             dl.speedBps,
@@ -72,7 +71,7 @@ func Run(ctx context.Context, opts Options, progress func(Sample)) (*Result, err
 		e.blob = genBlob(opts.MaxPayloadBytes, randomFloat)
 		up, err := e.runTransfer(ctx, PhaseUpload, t)
 		if err != nil {
-			return nil, fmt.Errorf("upload: %w", err)
+			return nil, errors.Errorf("upload: %w", err)
 		}
 		res.UploadBps, res.LoadedUploadLatencyMs, res.UploadDuration, res.UploadRan = up.speedBps, up.latencyMs, up.elapsed, true
 	}
@@ -86,7 +85,7 @@ func (e *engine) attemptLoop(ctx context.Context, phase Phase, t *targets, run f
 	var lastErr error
 	for n := 1; ; n++ {
 		if n > e.opts.MaxAttempts {
-			return fmt.Errorf("giving up after %d attempts: %w", e.opts.MaxAttempts, lastErr)
+			return errors.Errorf("giving up after %d attempts: %w", e.opts.MaxAttempts, lastErr)
 		}
 		if n > 1 {
 			backoff := time.Duration(math.Min(math.Pow(2, float64(n)), float64(e.opts.RetryBackoffCap.Milliseconds()))) * time.Millisecond

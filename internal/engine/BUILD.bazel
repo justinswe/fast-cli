@@ -15,7 +15,10 @@ go_library(
     ],
     importpath = "github.com/jfernbaugh/fast-cli/internal/engine",
     visibility = ["//:__subpackages__"],
-    deps = ["//internal/fastcom"],
+    deps = [
+        "//internal/fastcom",
+        "@com_github_justinswe_std//errors",
+    ],
 )
 
 go_test(
@@ -28,7 +31,10 @@ go_test(
         "targets_test.go",
     ],
     embed = [":engine"],
-    deps = ["//internal/fastcom"],
+    deps = [
+        "//internal/fastcom",
+        "@com_github_justinswe_std//errors",
+    ],
 )
 
 # keep: this test contacts fast.com and runs only when selected explicitly.

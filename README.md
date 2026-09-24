@@ -8,7 +8,8 @@ to be compared with what fast.com shows in a browser. The methodology is written
 [docs/PROTOCOL.md](docs/PROTOCOL.md), which was reverse-engineered from the fast.com web-app bundle; `internal/engine`
 implements it.
 
-Standard library only; no third-party dependencies.
+The speed-test protocol uses Go's standard library. Error handling and the installer server use
+[`justinswe/std`](https://github.com/justinswe/std); the compiled binaries have no runtime package dependencies.
 
 ## Requirements
 
@@ -19,9 +20,9 @@ Standard library only; no third-party dependencies.
 ## Build
 
 ```
-bazel build //cmd/fast:fast
+bazel build //cli:fast
 bazel test //...
-bazel run //cmd/fast:fast -- --help
+bazel run //cli:fast -- --help
 ```
 
 `fast` and release asset names use Bazel's `module_version()` from `MODULE.bazel`.
@@ -41,6 +42,26 @@ and `main` pushes run the same Bazel checks. A version tag triggers the release 
 it requires a trusted BuildBuddy secret named `GITHUB_RELEASE_TOKEN` with GitHub Contents
 write access to this repository. The release token is removed before the publisher invokes
 Bazel or Git. Publishing creates a draft, uploads the assets, then publishes it after verification.
+
+## One-line installer
+
+The installer selects the GitHub Release binary for Linux or macOS on amd64 or arm64, verifies it against that
+release's `SHA256SUMS`, and runs `fast`. By default it installs to `~/.local/bin/fast` without elevated permissions.
+`--no-install` runs from a private temporary directory and removes the binary afterward.
+
+```sh
+curl -fsSL https://speedtest.ju2tin.dev | bash
+curl -fsSL https://speedtest.ju2tin.dev | bash -s -- --no-install
+curl -fsSL https://speedtest.ju2tin.dev | bash -s -- --no-install -- --upload
+```
+
+The `--` after `--no-install` separates installer options from `fast` options. If `~/.local/bin` is not on `PATH`,
+the installer prints a hint; it still runs the installed binary by its full path. For a fetch failure to affect the
+pipeline's exit status, enable `pipefail` in the invoking shell. To review the script first, download it with
+`curl -fsSL -o install.sh https://speedtest.ju2tin.dev` and run `bash install.sh` after inspection.
+
+The endpoint image is built with Bazel from a digest-pinned distroless static base and can be hosted on Cloud Run.
+See [the installer deployment guide](docs/INSTALLER.md) for image verification, GAR publishing, and domain mapping.
 
 ## Usage
 

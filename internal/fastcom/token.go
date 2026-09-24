@@ -2,12 +2,13 @@ package fastcom
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"regexp"
 	"strings"
+
+	"github.com/justinswe/std/errors"
 )
 
 // fastComURL is the page whose app-<hash>.js bundle embeds the API token.
@@ -78,7 +79,7 @@ func get(ctx context.Context, hc *http.Client, url string, limit int64) ([]byte,
 	}
 	resp, err := hc.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("fastcom: %w", err)
+		return nil, errors.Errorf("fastcom: %w", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
@@ -86,7 +87,7 @@ func get(ctx context.Context, hc *http.Client, url string, limit int64) ([]byte,
 	}
 	body, err := io.ReadAll(io.LimitReader(resp.Body, limit))
 	if err != nil {
-		return nil, fmt.Errorf("fastcom: read %s: %w", url, err)
+		return nil, errors.Errorf("fastcom: read %s: %w", url, err)
 	}
 	return body, nil
 }

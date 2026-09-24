@@ -10,7 +10,7 @@ actions:
         merge_with_base: true
     steps:
       - run: env -u GITHUB_RELEASE_TOKEN bazel test --config=rbe --config=ci //...
-      - run: env -u GITHUB_RELEASE_TOKEN bazel build --config=rbe --config=ci //:release_version //:fast_linux_amd64 //:fast_linux_arm64 //:fast_darwin_amd64 //:fast_darwin_arm64
+      - run: env -u GITHUB_RELEASE_TOKEN bazel build --config=rbe --config=ci //:release_version //:fast_linux_amd64 //:fast_linux_arm64 //:fast_darwin_amd64 //:fast_darwin_arm64 //:installer_image
 
   - name: main
     container_image: "ubuntu-24.04"
@@ -22,7 +22,7 @@ actions:
         branches: [main]
     steps:
       - run: env -u GITHUB_RELEASE_TOKEN bazel test --config=rbe --config=ci //...
-      - run: env -u GITHUB_RELEASE_TOKEN bazel build --config=rbe --config=ci //:release_version //:fast_linux_amd64 //:fast_linux_arm64 //:fast_darwin_amd64 //:fast_darwin_arm64
+      - run: env -u GITHUB_RELEASE_TOKEN bazel build --config=rbe --config=ci //:release_version //:fast_linux_amd64 //:fast_linux_arm64 //:fast_darwin_amd64 //:fast_darwin_arm64 //:installer_image
 
   - name: publish
     container_image: "ubuntu-24.04"
@@ -34,7 +34,7 @@ actions:
         tags: ["v*"]
     steps:
       - run: env -u GITHUB_RELEASE_TOKEN bazel test --config=rbe --config=ci //...
-      - run: env -u GITHUB_RELEASE_TOKEN bazel build --config=rbe --config=ci --remote_download_outputs=all //:release_version //:fast_linux_amd64 //:fast_linux_arm64 //:fast_darwin_amd64 //:fast_darwin_arm64
+      - run: env -u GITHUB_RELEASE_TOKEN bazel build --config=rbe --config=ci --remote_download_outputs=all //:release_version //:fast_linux_amd64 //:fast_linux_arm64 //:fast_darwin_amd64 //:fast_darwin_arm64 //:installer_image
       - run: |
           set -euo pipefail
           set +x

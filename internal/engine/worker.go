@@ -3,13 +3,14 @@ package engine
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptrace"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/justinswe/std/errors"
 )
 
 // readBufferSize bounds one download read; each read is one progress measurement.
@@ -213,7 +214,7 @@ func (a *attempt) download(w *worker, reqURL string) error {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNotModified {
-		return fmt.Errorf("GET %s: HTTP %d", reqURL, resp.StatusCode)
+		return errors.Errorf("GET %s: HTTP %d", reqURL, resp.StatusCode)
 	}
 	for {
 		n, err := resp.Body.Read(w.buf)
@@ -256,7 +257,7 @@ func (a *attempt) upload(w *worker, reqURL string, size int64) error {
 	_, _ = io.Copy(io.Discard, resp.Body)
 	resp.Body.Close()
 	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) && resp.StatusCode != http.StatusNotModified {
-		return fmt.Errorf("POST %s: HTTP %d", reqURL, resp.StatusCode)
+		return errors.Errorf("POST %s: HTTP %d", reqURL, resp.StatusCode)
 	}
 	body.mu.Lock()
 	rest := float64(size) - body.loaded

@@ -3,7 +3,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/jfernbaugh/fast-cli/internal/engine"
 	"github.com/jfernbaugh/fast-cli/internal/output"
+	"github.com/justinswe/std/errors"
 )
 
 // version is overridable at build time with -ldflags "-X main.version=...".
