@@ -25,25 +25,25 @@ genrule(
 go_cross_binary(
     name = "fast_linux_amd64",
     platform = "@rules_go//go/toolchain:linux_amd64",
-    target = "//cli:fast",
+    target = "//fast",
 )
 
 go_cross_binary(
     name = "fast_linux_arm64",
     platform = "@rules_go//go/toolchain:linux_arm64",
-    target = "//cli:fast",
+    target = "//fast",
 )
 
 go_cross_binary(
     name = "fast_darwin_amd64",
     platform = "@rules_go//go/toolchain:darwin_amd64",
-    target = "//cli:fast",
+    target = "//fast",
 )
 
 go_cross_binary(
     name = "fast_darwin_arm64",
     platform = "@rules_go//go/toolchain:darwin_arm64",
-    target = "//cli:fast",
+    target = "//fast",
 )
 
 image_layer(

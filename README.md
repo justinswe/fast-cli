@@ -20,9 +20,9 @@ The speed-test protocol uses Go's standard library. Error handling and the insta
 ## Build
 
 ```
-bazel build //cli:fast
+bazel build //fast:fast
 bazel test //...
-bazel run //cli:fast -- --help
+bazel run //fast:fast -- --help
 ```
 
 `fast` and release asset names use Bazel's `module_version()` from `MODULE.bazel`.
