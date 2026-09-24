@@ -1,0 +1,23 @@
+common --noremote_upload_local_results
+common --test_output=errors
+
+# BuildBuddy remote execution. Credentials come from BuildBuddy's workflow runner.
+common:rbe --strategy=remote
+common:rbe --repo_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
+common:rbe --repo_env=BAZEL_NO_APPLE_CPP_TOOLCHAIN=1
+build:rbe --bes_results_url=https://justinswe.buildbuddy.io/invocation/
+build:rbe --bes_backend=grpcs://justinswe.buildbuddy.io
+build:rbe --remote_cache=grpcs://justinswe.buildbuddy.io
+build:rbe --remote_executor=grpcs://justinswe.buildbuddy.io
+build:rbe --remote_download_outputs=minimal
+build:rbe --host_platform=@toolchains_buildbuddy//platforms:linux_x86_64
+build:rbe --platforms=@toolchains_buildbuddy//platforms:linux_x86_64
+build:rbe --extra_execution_platforms=@toolchains_buildbuddy//platforms:linux_x86_64
+build:rbe --build_metadata=REPO_URL=https://github.com/justinswe/fast-cli.git
+
+common:ci --lockfile_mode=error
+common:ci --disk_cache=
+common:ci --noannounce_rc
+common:ci --remote_upload_local_results
+build:ci --build_metadata=ROLE=CI
+test:ci --test_summary=terse

@@ -1,0 +1,40 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+# gazelle:exclude live_test.go
+
+go_library(
+    name = "engine",
+    srcs = [
+        "aggregate.go",
+        "client.go",
+        "run.go",
+        "snapshot.go",
+        "targets.go",
+        "types.go",
+        "worker.go",
+    ],
+    importpath = "github.com/jfernbaugh/fast-cli/internal/engine",
+    visibility = ["//:__subpackages__"],
+    deps = ["//internal/fastcom"],
+)
+
+go_test(
+    name = "engine_test",
+    srcs = [
+        "aggregate_test.go",
+        "blob_test.go",
+        "run_test.go",
+        "snapshot_test.go",
+        "targets_test.go",
+    ],
+    embed = [":engine"],
+    deps = ["//internal/fastcom"],
+)
+
+# keep: this test contacts fast.com and runs only when selected explicitly.
+go_test(
+    name = "live_test",
+    srcs = ["live_test.go"],
+    embed = [":engine"],
+    tags = ["manual"],
+)

@@ -1,0 +1,41 @@
+actions:
+  - name: presubmit
+    container_image: "ubuntu-24.04"
+    resource_requests:
+      cpu: 2000m
+      memory: 6GB
+    triggers:
+      pull_request:
+        branches: [main]
+        merge_with_base: true
+    steps:
+      - run: env -u GITHUB_RELEASE_TOKEN bazel test --config=rbe --config=ci //...
+      - run: env -u GITHUB_RELEASE_TOKEN bazel build --config=rbe --config=ci //:release_version //:fast_linux_amd64 //:fast_linux_arm64 //:fast_darwin_amd64 //:fast_darwin_arm64
+
+  - name: main
+    container_image: "ubuntu-24.04"
+    resource_requests:
+      cpu: 2000m
+      memory: 6GB
+    triggers:
+      push:
+        branches: [main]
+    steps:
+      - run: env -u GITHUB_RELEASE_TOKEN bazel test --config=rbe --config=ci //...
+      - run: env -u GITHUB_RELEASE_TOKEN bazel build --config=rbe --config=ci //:release_version //:fast_linux_amd64 //:fast_linux_arm64 //:fast_darwin_amd64 //:fast_darwin_arm64
+
+  - name: publish
+    container_image: "ubuntu-24.04"
+    resource_requests:
+      cpu: 2000m
+      memory: 6GB
+    triggers:
+      push:
+        tags: ["v*"]
+    steps:
+      - run: env -u GITHUB_RELEASE_TOKEN bazel test --config=rbe --config=ci //...
+      - run: env -u GITHUB_RELEASE_TOKEN bazel build --config=rbe --config=ci --remote_download_outputs=all //:release_version //:fast_linux_amd64 //:fast_linux_arm64 //:fast_darwin_amd64 //:fast_darwin_arm64
+      - run: |
+          set -euo pipefail
+          set +x
+          python3 tools/release.py --publish

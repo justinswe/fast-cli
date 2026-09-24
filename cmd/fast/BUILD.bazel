@@ -1,0 +1,22 @@
+load("@rules_go//go:def.bzl", "go_binary", "go_library")
+
+MODULE_VERSION = module_version()
+
+go_library(
+    name = "fast_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/jfernbaugh/fast-cli/cmd/fast",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//internal/engine",
+        "//internal/output",
+    ],
+)
+
+go_binary(
+    name = "fast",
+    embed = [":fast_lib"],
+    pure = "on",
+    visibility = ["//visibility:public"],
+    x_defs = {"github.com/jfernbaugh/fast-cli/cmd/fast.version": MODULE_VERSION},
+)

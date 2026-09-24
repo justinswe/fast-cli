@@ -1,0 +1,23 @@
+module(
+    name = "fast-cli",
+    version = "0.1.0",
+)
+
+bazel_dep(name = "gazelle", version = "0.54.0")
+bazel_dep(name = "rules_go", version = "0.63.0")
+bazel_dep(name = "toolchains_buildbuddy", version = "0.0.4")
+
+go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
+go_sdk.from_file(
+    name = "go_sdk",
+    go_mod = "//:go.mod",
+)
+use_repo(go_sdk, "go_sdk")
+
+register_toolchains("@go_sdk//:all")
+
+buildbuddy = use_extension("@toolchains_buildbuddy//:extensions.bzl", "buildbuddy")
+buildbuddy.platform(buildbuddy_container_image = "UBUNTU24_04_IMAGE")
+use_repo(buildbuddy, "buildbuddy_toolchain")
+
+register_toolchains("@buildbuddy_toolchain//:ubuntu_cc_toolchain")

@@ -2,16 +2,12 @@ package engine
 
 import (
 	"context"
-	"os"
 	"testing"
 	"time"
 )
 
-// TestLive runs the real test against fast.com; run with FASTCLI_LIVE=1.
+// TestLive runs the real test against fast.com when its Bazel target is selected.
 func TestLive(t *testing.T) {
-	if os.Getenv("FASTCLI_LIVE") != "1" {
-		t.Skip("set FASTCLI_LIVE=1 to run against fast.com")
-	}
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancel()
 	opts := DefaultOptions()

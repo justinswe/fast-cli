@@ -1,0 +1,4 @@
+/bazel-*
+/bin/
+/dist/
+/.bazelrc.user

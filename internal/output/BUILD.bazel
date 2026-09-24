@@ -1,0 +1,27 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "output",
+    srcs = [
+        "format.go",
+        "json.go",
+        "render.go",
+    ],
+    importpath = "github.com/jfernbaugh/fast-cli/internal/output",
+    visibility = ["//:__subpackages__"],
+    deps = ["//internal/engine"],
+)
+
+go_test(
+    name = "output_test",
+    srcs = [
+        "format_test.go",
+        "json_test.go",
+        "render_test.go",
+    ],
+    embed = [":output"],
+    deps = [
+        "//internal/engine",
+        "//internal/fastcom",
+    ],
+)

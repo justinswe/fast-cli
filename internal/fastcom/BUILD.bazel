@@ -1,0 +1,28 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+# gazelle:exclude live_test.go
+
+go_library(
+    name = "fastcom",
+    srcs = [
+        "targets.go",
+        "token.go",
+        "types.go",
+    ],
+    importpath = "github.com/jfernbaugh/fast-cli/internal/fastcom",
+    visibility = ["//:__subpackages__"],
+)
+
+go_test(
+    name = "fastcom_test",
+    srcs = ["fastcom_test.go"],
+    embed = [":fastcom"],
+)
+
+# keep: this test contacts fast.com and runs only when selected explicitly.
+go_test(
+    name = "live_test",
+    srcs = ["live_test.go"],
+    embed = [":fastcom"],
+    tags = ["manual"],
+)
