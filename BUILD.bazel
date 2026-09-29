@@ -1,5 +1,5 @@
-load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@gazelle//:def.bzl", "gazelle")
+load("@rules_cloudrun//:defs.bzl", "cloudrun_deploy", "generate_manifest")
 load("@rules_go//go:def.bzl", "go_cross_binary")
 load("@rules_img//img:image.bzl", "image_manifest")
 load("@rules_img//img:layer.bzl", "file_metadata", "image_layer")
@@ -71,24 +71,26 @@ image_load(
     tag = "fast-installer:dev",
 )
 
-string_flag(
-    name = "gar_registry",
-    build_setting_default = "example-docker.pkg.dev",
-)
-
-string_flag(
-    name = "gar_repository",
-    build_setting_default = "example/fast-cli/fast-installer",
-)
-
 image_push(
     name = "installer_image_push",
-    build_settings = {
-        "REGISTRY": ":gar_registry",
-        "REPOSITORY": ":gar_repository",
-    },
     image = ":installer_image",
-    registry = "{{.REGISTRY}}",
-    repository = "{{.REPOSITORY}}",
+    registry = "us-west1-docker.pkg.dev",
+    repository = "justin-dev-00/justin/fast-installer",
     tag = "v" + module_version(),
+)
+
+generate_manifest(
+    name = "installer_service",
+    config = "installer_service.yaml",
+    image_container = "installer",
+    image_repo = "us-west1-docker.pkg.dev/justin-dev-00/justin/fast-installer",
+    image_target = ":installer_image",
+    resource_name = "fast-installer",
+)
+
+cloudrun_deploy(
+    name = "installer_deploy",
+    manifest = ":installer_service.render",
+    project = "justin-dev-00",
+    regions = ["us-west1"],
 )

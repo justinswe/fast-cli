@@ -10,8 +10,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/jfernbaugh/fast-cli/internal/engine"
-	"github.com/jfernbaugh/fast-cli/internal/output"
+	"github.com/justinswe/fast-cli/internal/engine"
+	"github.com/justinswe/fast-cli/internal/output"
 	"github.com/justinswe/std/errors"
 )
 

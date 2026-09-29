@@ -9,8 +9,8 @@ actions:
         branches: [main]
         merge_with_base: true
     steps:
-      - run: env -u GITHUB_RELEASE_TOKEN bazel test --config=rbe --config=ci //...
-      - run: env -u GITHUB_RELEASE_TOKEN bazel build --config=rbe --config=ci //:release_version //:fast_linux_amd64 //:fast_linux_arm64 //:fast_darwin_amd64 //:fast_darwin_arm64 //:installer_image
+      - run: env -u GITHUB_RELEASE_TOKEN -u GCP_DEPLOYER_KEY bazel test --config=rbe --config=ci //...
+      - run: env -u GITHUB_RELEASE_TOKEN -u GCP_DEPLOYER_KEY bazel build --config=rbe --config=ci //:release_version //:fast_linux_amd64 //:fast_linux_arm64 //:fast_darwin_amd64 //:fast_darwin_arm64 //:installer_image //:installer_service.render
 
   - name: main
     container_image: "ubuntu-24.04"
@@ -21,8 +21,8 @@ actions:
       push:
         branches: [main]
     steps:
-      - run: env -u GITHUB_RELEASE_TOKEN bazel test --config=rbe --config=ci //...
-      - run: env -u GITHUB_RELEASE_TOKEN bazel build --config=rbe --config=ci //:release_version //:fast_linux_amd64 //:fast_linux_arm64 //:fast_darwin_amd64 //:fast_darwin_arm64 //:installer_image
+      - run: env -u GITHUB_RELEASE_TOKEN -u GCP_DEPLOYER_KEY bazel test --config=rbe --config=ci //...
+      - run: env -u GITHUB_RELEASE_TOKEN -u GCP_DEPLOYER_KEY bazel build --config=rbe --config=ci //:release_version //:fast_linux_amd64 //:fast_linux_arm64 //:fast_darwin_amd64 //:fast_darwin_arm64 //:installer_image //:installer_service.render
 
   - name: publish
     container_image: "ubuntu-24.04"
@@ -33,9 +33,24 @@ actions:
       push:
         tags: ["v*"]
     steps:
-      - run: env -u GITHUB_RELEASE_TOKEN bazel test --config=rbe --config=ci //...
-      - run: env -u GITHUB_RELEASE_TOKEN bazel build --config=rbe --config=ci --remote_download_outputs=all //:release_version //:fast_linux_amd64 //:fast_linux_arm64 //:fast_darwin_amd64 //:fast_darwin_arm64 //:installer_image
+      - run: env -u GITHUB_RELEASE_TOKEN -u GCP_DEPLOYER_KEY bazel test --config=rbe --config=ci //...
+      - run: env -u GITHUB_RELEASE_TOKEN -u GCP_DEPLOYER_KEY bazel build --config=rbe --config=ci --remote_download_outputs=all //:release_version //:fast_linux_amd64 //:fast_linux_arm64 //:fast_darwin_amd64 //:fast_darwin_arm64 //:installer_image //:installer_service.render
       - run: |
           set -euo pipefail
           set +x
-          python3 tools/release.py --publish
+          env -u GCP_DEPLOYER_KEY python3 tools/release.py --publish
+      - run: |
+          set -euo pipefail
+          set +x
+          unset GITHUB_RELEASE_TOKEN
+          dir="$(mktemp -d)"
+          trap 'rm -rf "$dir"' EXIT
+          printf '%s' "$GCP_DEPLOYER_KEY" > "${dir}/key.json"
+          unset GCP_DEPLOYER_KEY
+          auth="$(printf '_json_key_base64:%s' "$(base64 -w0 "${dir}/key.json")" | base64 -w0)"
+          printf '{"auths":{"us-west1-docker.pkg.dev":{"auth":"%s"}}}' "$auth" > "${dir}/config.json"
+          export DOCKER_CONFIG="$dir" GOOGLE_APPLICATION_CREDENTIALS="${dir}/key.json"
+          bazel run --config=rbe --config=ci --remote_download_outputs=all //:installer_image_push
+          bazel run --config=rbe --config=ci --remote_download_outputs=all //:installer_deploy
+          version="$(cat "$(bazel cquery --config=rbe --config=ci --remote_download_outputs=all --output=files //:release_version)")"
+          curl -fsS --retry 5 --retry-all-errors https://speedtest.ju2tin.dev/ | grep -qx "version='${version}'"

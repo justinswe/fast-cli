@@ -1,3 +1,4 @@
+common --module_mirrors="https://bcr.cloudflaremirrors.com"
 common --noremote_upload_local_results
 common --test_output=errors
 

@@ -6,7 +6,7 @@ go_library(
     name = "installer_lib",
     srcs = ["main.go"],
     embedsrcs = ["install.sh"],
-    importpath = "github.com/jfernbaugh/fast-cli/installer",
+    importpath = "github.com/justinswe/fast-cli/installer",
     visibility = ["//visibility:private"],
     deps = [
         "@com_github_justinswe_std//app",
@@ -20,7 +20,7 @@ go_binary(
     embed = [":installer_lib"],
     pure = "on",
     visibility = ["//visibility:public"],
-    x_defs = {"github.com/jfernbaugh/fast-cli/installer.version": MODULE_VERSION},
+    x_defs = {"github.com/justinswe/fast-cli/installer.version": MODULE_VERSION},
 )
 
 go_test(

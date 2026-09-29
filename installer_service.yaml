@@ -1,0 +1,16 @@
+ingress: INGRESS_TRAFFIC_ALL
+template:
+  maxInstanceRequestConcurrency: 80
+  serviceAccount: fast-installer@justin-dev-00.iam.gserviceaccount.com
+  scaling:
+    maxInstanceCount: 3
+  containers:
+    - name: installer
+      ports:
+        - containerPort: 8080
+      resources:
+        limits: { cpu: '1', memory: 512Mi }
+        cpuIdle: true
+      startupProbe:
+        httpGet:
+          path: /healthz

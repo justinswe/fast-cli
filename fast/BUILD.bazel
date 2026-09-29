@@ -5,7 +5,7 @@ MODULE_VERSION = module_version()
 go_library(
     name = "fast_lib",
     srcs = ["main.go"],
-    importpath = "github.com/jfernbaugh/fast-cli/fast",
+    importpath = "github.com/justinswe/fast-cli/fast",
     visibility = ["//visibility:private"],
     deps = [
         "//internal/engine",
@@ -19,5 +19,5 @@ go_binary(
     embed = [":fast_lib"],
     pure = "on",
     visibility = ["//visibility:public"],
-    x_defs = {"github.com/jfernbaugh/fast-cli/fast.version": MODULE_VERSION},
+    x_defs = {"github.com/justinswe/fast-cli/fast.version": MODULE_VERSION},
 )

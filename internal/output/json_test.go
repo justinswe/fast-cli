@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jfernbaugh/fast-cli/internal/engine"
-	"github.com/jfernbaugh/fast-cli/internal/fastcom"
+	"github.com/justinswe/fast-cli/internal/engine"
+	"github.com/justinswe/fast-cli/internal/fastcom"
 )
 
 func sampleResult(upload bool) *engine.Result {

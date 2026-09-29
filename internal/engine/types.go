@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/jfernbaugh/fast-cli/internal/fastcom"
+	"github.com/justinswe/fast-cli/internal/fastcom"
 )
 
 // Phase identifies which measurement a Sample belongs to.

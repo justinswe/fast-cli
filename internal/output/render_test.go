@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jfernbaugh/fast-cli/internal/engine"
+	"github.com/justinswe/fast-cli/internal/engine"
 )
 
 func TestFinishSummary(t *testing.T) {

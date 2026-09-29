@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jfernbaugh/fast-cli/internal/engine"
+	"github.com/justinswe/fast-cli/internal/engine"
 )
 
 // IsTerminal reports whether f is a character device (an interactive terminal).

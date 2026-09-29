@@ -7,7 +7,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/jfernbaugh/fast-cli/internal/fastcom"
+	"github.com/justinswe/fast-cli/internal/fastcom"
 )
 
 // targets ports url_getter (PROTOCOL.md §b, app.pretty.js L3045–3312): the

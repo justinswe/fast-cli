@@ -5,7 +5,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/jfernbaugh/fast-cli/internal/engine"
+	"github.com/justinswe/fast-cli/internal/engine"
 )
 
 // JSONResult is the stable machine-readable schema printed by --json.

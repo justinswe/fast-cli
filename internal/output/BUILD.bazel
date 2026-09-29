@@ -7,7 +7,7 @@ go_library(
         "json.go",
         "render.go",
     ],
-    importpath = "github.com/jfernbaugh/fast-cli/internal/output",
+    importpath = "github.com/justinswe/fast-cli/internal/output",
     visibility = ["//:__subpackages__"],
     deps = ["//internal/engine"],
 )

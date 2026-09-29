@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/jfernbaugh/fast-cli/internal/fastcom"
+	"github.com/justinswe/fast-cli/internal/fastcom"
 	"github.com/justinswe/std/errors"
 )
 

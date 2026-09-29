@@ -39,6 +39,8 @@ and `main` pushes run the same Bazel checks. A version tag triggers the release 
 it requires a trusted BuildBuddy secret named `GITHUB_RELEASE_TOKEN` with GitHub Contents
 write access to this repository. The release token is removed before the publisher invokes
 Bazel or Git. Publishing creates a draft, uploads the assets, then publishes it after verification.
+After the release is live, the same workflow pushes the installer image and deploys it to Cloud Run with
+`//:installer_deploy`; that step needs a trusted `GCP_DEPLOYER_KEY` secret (see [docs/INSTALLER.md](docs/INSTALLER.md)).
 
 ## One-line installer
 
@@ -57,8 +59,8 @@ the installer prints a hint; it still runs the installed binary by its full path
 pipeline's exit status, enable `pipefail` in the invoking shell. To review the script first, download it with
 `curl -fsSL -o install.sh https://speedtest.ju2tin.dev` and run `bash install.sh` after inspection.
 
-The endpoint image is built with Bazel from a digest-pinned distroless static base and can be hosted on Cloud Run.
-See [the installer deployment guide](docs/INSTALLER.md) for image verification, GAR publishing, and domain mapping.
+The endpoint image is built with Bazel from a digest-pinned distroless static base and runs on Cloud Run in
+`us-west1`. See [the installer deployment guide](docs/INSTALLER.md) for the service definition and one-time setup.
 
 ## Usage
 

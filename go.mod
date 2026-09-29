@@ -1,4 +1,4 @@
-module github.com/jfernbaugh/fast-cli
+module github.com/justinswe/fast-cli
 
 go 1.27.1
 

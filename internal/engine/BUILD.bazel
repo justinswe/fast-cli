@@ -13,7 +13,7 @@ go_library(
         "types.go",
         "worker.go",
     ],
-    importpath = "github.com/jfernbaugh/fast-cli/internal/engine",
+    importpath = "github.com/justinswe/fast-cli/internal/engine",
     visibility = ["//:__subpackages__"],
     deps = [
         "//internal/fastcom",

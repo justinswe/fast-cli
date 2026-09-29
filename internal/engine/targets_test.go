@@ -11,7 +11,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/jfernbaugh/fast-cli/internal/fastcom"
+	"github.com/justinswe/fast-cli/internal/fastcom"
 )
 
 const tpl = "https://ipv4-c204-sea001-ix.1.oca.nflxvideo.net/speedtest/range/?c=us&n=396982&v=319&e=1&t=sig"
