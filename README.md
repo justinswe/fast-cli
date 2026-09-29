@@ -4,12 +4,9 @@
 downloader that hits Netflix's servers: it reproduces fast.com's own methodology — the same token discovery, the same
 targets API call, the same 2048-byte warm-up followed by 25 MB range requests, the same 1→3→5→8 connection ramp,
 the same 150 ms sampling, the same `stableMovingAverage` aggregator and the same stop rule — so its numbers are meant
-to be compared with what fast.com shows in a browser. The methodology is written down in
-[docs/PROTOCOL.md](docs/PROTOCOL.md), which was reverse-engineered from the fast.com web-app bundle; `internal/engine`
-implements it.
+to be compared with what fast.com shows in a browser.
 
-The speed-test protocol uses Go's standard library. Error handling and the installer server use
-[`justinswe/std`](https://github.com/justinswe/std); the compiled binaries have no runtime package dependencies.
+The speed-test protocol uses Go's standard library; the compiled binaries have no runtime package dependencies.
 
 ## Requirements
 
