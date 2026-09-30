@@ -28,19 +28,16 @@ The real-network tests are separate manual targets:
 
 ## Releases
 
-A `vX.Y.Z` tag on `main` publishes four GitHub Release assets:
-`fast-vX.Y.Z-linux-amd64`, `fast-vX.Y.Z-linux-arm64`,
-`fast-vX.Y.Z-darwin-amd64`, and `fast-vX.Y.Z-darwin-arm64`, plus `SHA256SUMS`.
-The tag must match `MODULE.bazel`'s version. Download the asset for your OS and CPU,
-check its SHA-256 digest against `SHA256SUMS`, and mark it executable (`chmod +x fast-vX.Y.Z-*`).
+Bump `version` in `MODULE.bazel` to release. The next push to `main` creates tag `vX.Y.Z` on that commit and a GitHub
+Release with four assets: `fast-vX.Y.Z-linux-amd64`, `fast-vX.Y.Z-linux-arm64`, `fast-vX.Y.Z-darwin-amd64`, and
+`fast-vX.Y.Z-darwin-arm64`, plus `SHA256SUMS`. Pushes that don't bump the version skip the release. Download the asset
+for your OS and CPU, check its SHA-256 digest against `SHA256SUMS`, and mark it executable (`chmod +x fast-vX.Y.Z-*`).
 
-Enable BuildBuddy Workflows for this repository. Presubmit runs on pull requests to `main`,
-and `main` pushes run the same Bazel checks. A version tag triggers the release workflow;
-it requires a trusted BuildBuddy secret named `GITHUB_RELEASE_TOKEN` with GitHub Contents
-write access to this repository. The release token is removed before the publisher invokes
-Bazel or Git. Publishing creates a draft, uploads the assets, then publishes it after verification.
-After the release is live, the same workflow pushes the installer image and deploys it to Cloud Run with
-`//:installer_deploy`; that step needs a trusted `GCP_DEPLOYER_KEY` secret (see [docs/INSTALLER.md](docs/INSTALLER.md)).
+Enable BuildBuddy Workflows for this repository. Presubmit runs on pull requests to `main`. Each `main` push tests,
+builds, releases, and then deploys the installer. The release step needs a trusted BuildBuddy secret named
+`GITHUB_RELEASE_TOKEN` with GitHub Contents write access to this repository; it is removed before the publisher invokes
+Bazel or Git. Publishing creates a draft, uploads the assets, then publishes it after verification. The deploy step
+needs a trusted `GCP_DEPLOYER_KEY` secret (a key for `fast-deployer@justin-dev-00.iam.gserviceaccount.com`).
 
 ## One-line installer
 
@@ -59,8 +56,25 @@ the installer prints a hint; it still runs the installed binary by its full path
 pipeline's exit status, enable `pipefail` in the invoking shell. To review the script first, download it with
 `curl -fsSL -o install.sh https://speedtest.ju2tin.dev` and run `bash install.sh` after inspection.
 
-The endpoint image is built with Bazel from a digest-pinned distroless static base and runs on Cloud Run in
-`us-west1`. See [the installer deployment guide](docs/INSTALLER.md) for the service definition and one-time setup.
+### Installer hosting
+
+The endpoint image is built with Bazel from a digest-pinned distroless static base. It runs as the Cloud Run service
+`fast-installer` in `justin-dev-00`/`us-west1`: 1 vCPU, 512 MiB, request-based billing, 80 concurrent requests per
+instance, at most 3 instances. [`installer_service.yaml`](installer_service.yaml) defines it;
+[rules_cloudrun](https://github.com/justinswe/rules_cloudrun) validates it at build time and pins the image digest.
+After the release step, CI runs `//:installer_image_push` and `//:installer_deploy`, then checks that
+`https://speedtest.ju2tin.dev` serves the new version.
+
+One-time setup, after the first deploy creates the service:
+
+```sh
+gcloud run services add-iam-policy-binding fast-installer --region=us-west1 --project=justin-dev-00 \
+  --member=allUsers --role=roles/run.invoker
+gcloud beta run domain-mappings create --service=fast-installer --domain=speedtest.ju2tin.dev \
+  --region=us-west1 --project=justin-dev-00
+```
+
+Point `speedtest.ju2tin.dev` at the record the mapping returns (DNS only, not proxied).
 
 ## Usage
 

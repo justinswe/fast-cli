@@ -16,6 +16,7 @@ from pathlib import Path
 
 
 REPOSITORY = "justinswe/fast-cli"
+RELEASES = f"https://api.github.com/repos/{REPOSITORY}/releases"
 ASSETS = {
     "fast_linux_amd64": "linux-amd64",
     "fast_linux_arm64": "linux-arm64",
@@ -40,29 +41,15 @@ def module_version(flags):
     return version
 
 
-def check_tag(tag):
-    """Require the release tag to point to a commit on main."""
-    head = command("git", "rev-parse", "HEAD")
-    result = subprocess.run(
-        ["git", "rev-parse", f"refs/tags/{tag}^{{commit}}"],
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode:
-        raise ValueError(f"release tag {tag} is missing")
-    tagged = result.stdout.strip()
-    if tagged != head:
-        raise ValueError(f"{tag} does not point to HEAD")
-    tags = command("git", "tag", "--points-at", "HEAD").splitlines()
-    version_tags = [name for name in tags if name.startswith("v")]
-    if version_tags != [tag]:
-        raise ValueError(f"HEAD must have only the {tag} version tag")
+def check_main():
+    """Require HEAD to be a commit on main and return its SHA."""
     result = subprocess.run(
         ["git", "merge-base", "--is-ancestor", "HEAD", "refs/remotes/origin/main"],
         capture_output=True,
     )
     if result.returncode:
-        raise ValueError(f"{tag} is not on origin/main")
+        raise ValueError("HEAD is not on origin/main")
+    return command("git", "rev-parse", "HEAD")
 
 
 def prepare_assets(tag, flags):
@@ -109,22 +96,25 @@ def request(method, url, token, body=None, content_type="application/json"):
         raise RuntimeError(f"GitHub {method} {url}: request failed") from None
 
 
-def publish_release(tag, assets, token):
-    """Upload missing assets to a draft, then publish the release."""
-    base = f"https://api.github.com/repos/{REPOSITORY}/releases"
-    release = request("GET", f"{base}/tags/{tag}", token)
+def existing_release(tag, token):
+    """Return the GitHub release for tag, or None."""
+    return request("GET", f"{RELEASES}/tags/{tag}", token)
+
+
+def publish_release(tag, commit, release, assets, token):
+    """Upload missing assets to a draft tagged at commit, then publish the release."""
+    # ponytail: two pushes racing on one new version collide on the draft's digests; serialize runs if that matters.
     if release is None:
-        release = request("POST", base, token, {
+        release = request("POST", RELEASES, token, {
             "tag_name": tag,
+            "target_commitish": commit,
             "name": tag,
             "draft": True,
             "generate_release_notes": True,
         })
-    if not release["draft"]:
-        raise ValueError(f"GitHub release {tag} is already published")
 
     release_id = release["id"]
-    uploaded = request("GET", f"{base}/{release_id}/assets?per_page=100", token)
+    uploaded = request("GET", f"{RELEASES}/{release_id}/assets?per_page=100", token)
     by_name = {asset["name"]: asset for asset in uploaded}
     for asset in assets:
         data = asset.read_bytes()
@@ -139,7 +129,7 @@ def publish_release(tag, assets, token):
         )
         request("POST", upload_url, token, data, "application/octet-stream")
 
-    uploaded = request("GET", f"{base}/{release_id}/assets?per_page=100", token)
+    uploaded = request("GET", f"{RELEASES}/{release_id}/assets?per_page=100", token)
     by_name = {asset["name"]: asset for asset in uploaded}
     if set(by_name) != {asset.name for asset in assets}:
         raise ValueError("release assets did not match the expected files")
@@ -147,7 +137,7 @@ def publish_release(tag, assets, token):
         digest = "sha256:" + hashlib.sha256(asset.read_bytes()).hexdigest()
         if by_name[asset.name].get("digest") != digest:
             raise ValueError(f"release asset {asset.name} has a different digest")
-    request("PATCH", f"{base}/{release_id}", token, {"draft": False})
+    request("PATCH", f"{RELEASES}/{release_id}", token, {"draft": False})
 
 
 def main():
@@ -158,15 +148,20 @@ def main():
     token = os.environ.pop("GITHUB_RELEASE_TOKEN", None)
     flags = ("--config=rbe", "--config=ci") if args.publish else ()
     tag = "v" + module_version(flags)
-    if args.publish:
-        check_tag(tag)
+    if not args.publish:
+        assets = prepare_assets(tag, flags)
+        print("Prepared " + ", ".join(str(asset) for asset in assets))
+        return
+    if not token:
+        raise ValueError("GITHUB_RELEASE_TOKEN is not configured")
+    commit = check_main()
+    release = existing_release(tag, token)
+    if release is not None and not release["draft"]:
+        print(f"release {tag} already published; skipping")
+        return
     assets = prepare_assets(tag, flags)
-    if args.publish:
-        if not token:
-            raise ValueError("GITHUB_RELEASE_TOKEN is not configured")
-        publish_release(tag, assets, token)
-    action = "Published" if args.publish else "Prepared"
-    print(action + " " + ", ".join(str(asset) for asset in assets))
+    publish_release(tag, commit, release, assets, token)
+    print("Published " + ", ".join(str(asset) for asset in assets))
 
 
 if __name__ == "__main__":

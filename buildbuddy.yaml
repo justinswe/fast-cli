@@ -22,18 +22,6 @@ actions:
         branches: [main]
     steps:
       - run: env -u GITHUB_RELEASE_TOKEN -u GCP_DEPLOYER_KEY bazel test --config=rbe --config=ci //...
-      - run: env -u GITHUB_RELEASE_TOKEN -u GCP_DEPLOYER_KEY bazel build --config=rbe --config=ci //:release_version //:fast_linux_amd64 //:fast_linux_arm64 //:fast_darwin_amd64 //:fast_darwin_arm64 //:installer_image //:installer_service.render
-
-  - name: publish
-    container_image: "ubuntu-24.04"
-    resource_requests:
-      cpu: 2000m
-      memory: 6GB
-    triggers:
-      push:
-        tags: ["v*"]
-    steps:
-      - run: env -u GITHUB_RELEASE_TOKEN -u GCP_DEPLOYER_KEY bazel test --config=rbe --config=ci //...
       - run: env -u GITHUB_RELEASE_TOKEN -u GCP_DEPLOYER_KEY bazel build --config=rbe --config=ci --remote_download_outputs=all //:release_version //:fast_linux_amd64 //:fast_linux_arm64 //:fast_darwin_amd64 //:fast_darwin_arm64 //:installer_image //:installer_service.render
       - run: |
           set -euo pipefail
