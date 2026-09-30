@@ -41,15 +41,13 @@ def module_version(flags):
     return version
 
 
-def check_main():
-    """Require HEAD to be a commit on main and return its SHA."""
-    result = subprocess.run(
-        ["git", "merge-base", "--is-ancestor", "HEAD", "refs/remotes/origin/main"],
-        capture_output=True,
-    )
-    if result.returncode:
-        raise ValueError("HEAD is not on origin/main")
-    return command("git", "rev-parse", "HEAD")
+def check_main(token):
+    """Require HEAD to be GitHub's current main tip and return its SHA."""
+    head = command("git", "rev-parse", "HEAD")
+    ref = request("GET", f"https://api.github.com/repos/{REPOSITORY}/git/ref/heads/main", token)
+    if ref is None or ref["object"]["sha"] != head:
+        raise ValueError("HEAD is not the tip of main")
+    return head
 
 
 def prepare_assets(tag, flags):
@@ -154,7 +152,7 @@ def main():
         return
     if not token:
         raise ValueError("GITHUB_RELEASE_TOKEN is not configured")
-    commit = check_main()
+    commit = check_main(token)
     release = existing_release(tag, token)
     if release is not None and not release["draft"]:
         print(f"release {tag} already published; skipping")
