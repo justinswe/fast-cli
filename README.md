@@ -1,17 +1,12 @@
 # fast-cli
 
-`fast` is a command-line reimplementation of [fast.com](https://fast.com)'s speed test in Go. It is not a generic
-downloader that hits Netflix's servers: it reproduces fast.com's own methodology — the same token discovery, the same
-targets API call, the same 2048-byte warm-up followed by 25 MB range requests, the same 1→3→5→8 connection ramp,
-the same 150 ms sampling, the same `stableMovingAverage` aggregator and the same stop rule — so its numbers are meant
-to be compared with what fast.com shows in a browser.
-
-The speed-test protocol uses Go's standard library; the compiled binaries have no runtime package dependencies.
+`fast` is a command-line reimplementation of [fast.com](https://fast.com)'s speed test in Go.
+There's no dependencies or other external packages needed, just a single binary which supports ~10 Gigabit speeds.
 
 ## One-line installer
 
 The installer selects the GitHub Release binary for Linux or macOS on amd64 or arm64, verifies it against that
-release's `SHA256SUMS`, and runs `fast`. By default it installs to `~/.local/bin/fast` without elevated permissions.
+release's `SHA256SUMS`, and runs `fast`.
 `--no-install` runs from a private temporary directory and removes the binary afterward.
 
 Install and run:
@@ -37,13 +32,15 @@ the installer prints a hint; it still runs the installed binary by its full path
 pipeline's exit status, enable `pipefail` in the invoking shell. To review the script first, download it with
 `curl -fsSL -o install.sh https://speedtest.ju2tin.dev` and run `bash install.sh` after inspection.
 
-## Requirements
+## Development
+
+### Requirements
 
 - Bazel 9.2.0 (or Bazelisk); Bazel downloads Go 1.27.1.
 - Outbound HTTPS to `fast.com`, `api.fast.com` and the Netflix Open Connect servers (`*.oca.nflxvideo.net`) the API
   hands out.
 
-## Build
+### Build
 
 ```
 bazel build //fast:fast
@@ -55,7 +52,7 @@ bazel run //fast:fast -- --help
 The real-network tests are separate manual targets:
 `bazel test //internal/fastcom:live_test //internal/engine:live_test`.
 
-## Releases
+### Releases
 
 Bump `version` in `MODULE.bazel` to release. The next push to `main` creates tag `vX.Y.Z` on that commit and a GitHub
 Release with four assets: `fast-vX.Y.Z-linux-amd64`, `fast-vX.Y.Z-linux-arm64`, `fast-vX.Y.Z-darwin-amd64`, and
@@ -68,12 +65,12 @@ builds, releases, and then deploys the installer. The release step needs a trust
 Bazel or Git. Publishing creates a draft, uploads the assets, then publishes it after verification. The deploy step
 needs a trusted `GCP_DEPLOYER_KEY` secret: a Cloud Run deployer service-account key.
 
-### Installer hosting
+#### Installer hosting
 
 The endpoint image is built with Bazel from a digest-pinned distroless static base and runs on Cloud Run as defined in
 [`installer/manifest.yaml`](installer/manifest.yaml). The `main` workflow deploys it after the release step.
 
-## Usage
+### Usage
 
 ```
 usage: fast [-u|--upload] [--json] [--single-line] [--timeout d]
@@ -92,7 +89,7 @@ On a terminal a single progress line is redrawn in place while the test runs (`D
 45 ms`, then `Upload: …` when `-u` is on). When stdout is not a terminal the progress line is printed
 newline-terminated at most once per second. Ctrl-C stops the run.
 
-### Sample output
+#### Sample output
 
 Default run (download, then unloaded latency). Example output; your numbers will differ:
 
@@ -122,7 +119,7 @@ Speeds and latencies in the human output use fast.com's display rounding (see Me
 location, public IP and ISP as reported by the fast.com API (ISP may be absent); `Server(s)` lists the distinct
 locations of the first three targets, as fast.com does.
 
-### `--json` schema
+#### `--json` schema
 
 `--json` suppresses live output and prints exactly one newline-terminated JSON object on stdout. Speeds are raw
 megabits per second (bits/s ÷ 1e6, not fast.com-rounded); latencies are raw milliseconds; durations are seconds.
@@ -179,7 +176,7 @@ megabits per second (bits/s ÷ 1e6, not fast.com-rounded); latencies are raw mil
 | `durations.download_seconds`          | number           | Wall-clock length of the download phase.                               |
 | `durations.upload_seconds`            | number or `null` | Wall-clock length of the upload phase; `null` without `-u`.            |
 
-## Exit codes
+### Exit codes
 
 | Code | Meaning                                                                                                   |
 | ---- | --------------------------------------------------------------------------------------------------------- |
