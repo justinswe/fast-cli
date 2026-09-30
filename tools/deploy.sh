@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
-# Pushes the installer image, deploys it to Cloud Run, and checks the live version.
-# Kept out of buildbuddy.yaml: the BuildBuddy runner expands $VARS in that file,
-# and the multi-line key breaks its YAML parse.
+# Pushes the installer image and deploys it; cloudrun-deploy waits until the new revision is Ready.
+# Not inline in buildbuddy.yaml: the runner's cleanup expands $GCP_DEPLOYER_KEY there and breaks the YAML.
 set -euo pipefail
-set +x
 
 dir="$(mktemp -d)"
 trap 'rm -rf "$dir"' EXIT
@@ -16,5 +14,3 @@ export DOCKER_CONFIG="$dir" GOOGLE_APPLICATION_CREDENTIALS="${dir}/key.json"
 flags=(--config=rbe --config=ci --remote_download_outputs=all)
 bazel run "${flags[@]}" //:installer_image_push
 bazel run "${flags[@]}" //:installer_deploy
-version="$(cat "$(bazel cquery "${flags[@]}" --output=files //:release_version)")"
-curl -fsS --retry 5 --retry-all-errors https://speedtest.ju2tin.dev/ | grep -qx "version='${version}'"

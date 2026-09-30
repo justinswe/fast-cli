@@ -94,14 +94,8 @@ def request(method, url, token, body=None, content_type="application/json"):
         raise RuntimeError(f"GitHub {method} {url}: request failed") from None
 
 
-def existing_release(tag, token):
-    """Return the GitHub release for tag, or None."""
-    return request("GET", f"{RELEASES}/tags/{tag}", token)
-
-
 def publish_release(tag, commit, release, assets, token):
     """Upload missing assets to a draft tagged at commit, then publish the release."""
-    # ponytail: two pushes racing on one new version collide on the draft's digests; serialize runs if that matters.
     if release is None:
         release = request("POST", RELEASES, token, {
             "tag_name": tag,
@@ -153,7 +147,7 @@ def main():
     if not token:
         raise ValueError("GITHUB_RELEASE_TOKEN is not configured")
     commit = check_main(token)
-    release = existing_release(tag, token)
+    release = request("GET", f"{RELEASES}/tags/{tag}", token)
     if release is not None and not release["draft"]:
         print(f"release {tag} already published; skipping")
         return

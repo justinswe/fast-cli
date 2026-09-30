@@ -2,6 +2,8 @@ load("@rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 
 MODULE_VERSION = module_version()
 
+exports_files(["manifest.yaml"])
+
 go_library(
     name = "installer_lib",
     srcs = ["main.go"],

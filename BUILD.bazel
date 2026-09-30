@@ -81,7 +81,7 @@ image_push(
 
 generate_manifest(
     name = "installer_service",
-    config = "installer_service.yaml",
+    config = "//installer:manifest.yaml",
     image_container = "installer",
     image_repo = "us-west1-docker.pkg.dev/justin-dev-00/justin/fast-installer",
     image_target = ":installer_image",

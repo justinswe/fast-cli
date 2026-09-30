@@ -8,6 +8,25 @@ to be compared with what fast.com shows in a browser.
 
 The speed-test protocol uses Go's standard library; the compiled binaries have no runtime package dependencies.
 
+## One-line installer
+
+The installer selects the GitHub Release binary for Linux or macOS on amd64 or arm64, verifies it against that
+release's `SHA256SUMS`, and runs `fast`. By default it installs to `~/.local/bin/fast` without elevated permissions.
+`--no-install` runs from a private temporary directory and removes the binary afterward.
+
+```sh
+`curl -fsSL https://speedtest.ju2tin.dev | bash`
+
+Only Speedtest; No install
+`curl -fsSL https://speedtest.ju2tin.dev | bash -s -- --no-install`
+`curl -fsSL https://speedtest.ju2tin.dev | bash -s -- --no-install -- --upload`
+```
+
+The `--` after `--no-install` separates installer options from `fast` options. If `~/.local/bin` is not on `PATH`,
+the installer prints a hint; it still runs the installed binary by its full path. For a fetch failure to affect the
+pipeline's exit status, enable `pipefail` in the invoking shell. To review the script first, download it with
+`curl -fsSL -o install.sh https://speedtest.ju2tin.dev` and run `bash install.sh` after inspection.
+
 ## Requirements
 
 - Bazel 9.2.0 (or Bazelisk); Bazel downloads Go 1.27.1.
@@ -37,44 +56,12 @@ Enable BuildBuddy Workflows for this repository. Presubmit runs on pull requests
 builds, releases, and then deploys the installer. The release step needs a trusted BuildBuddy secret named
 `GITHUB_RELEASE_TOKEN` with GitHub Contents write access to this repository; it is removed before the publisher invokes
 Bazel or Git. Publishing creates a draft, uploads the assets, then publishes it after verification. The deploy step
-needs a trusted `GCP_DEPLOYER_KEY` secret (a key for `fast-deployer@justin-dev-00.iam.gserviceaccount.com`).
-
-## One-line installer
-
-The installer selects the GitHub Release binary for Linux or macOS on amd64 or arm64, verifies it against that
-release's `SHA256SUMS`, and runs `fast`. By default it installs to `~/.local/bin/fast` without elevated permissions.
-`--no-install` runs from a private temporary directory and removes the binary afterward.
-
-```sh
-curl -fsSL https://speedtest.ju2tin.dev | bash
-curl -fsSL https://speedtest.ju2tin.dev | bash -s -- --no-install
-curl -fsSL https://speedtest.ju2tin.dev | bash -s -- --no-install -- --upload
-```
-
-The `--` after `--no-install` separates installer options from `fast` options. If `~/.local/bin` is not on `PATH`,
-the installer prints a hint; it still runs the installed binary by its full path. For a fetch failure to affect the
-pipeline's exit status, enable `pipefail` in the invoking shell. To review the script first, download it with
-`curl -fsSL -o install.sh https://speedtest.ju2tin.dev` and run `bash install.sh` after inspection.
+needs a trusted `GCP_DEPLOYER_KEY` secret: a Cloud Run deployer service-account key.
 
 ### Installer hosting
 
-The endpoint image is built with Bazel from a digest-pinned distroless static base. It runs as the Cloud Run service
-`fast-installer` in `justin-dev-00`/`us-west1`: 1 vCPU, 512 MiB, request-based billing, 80 concurrent requests per
-instance, at most 3 instances. [`installer_service.yaml`](installer_service.yaml) defines it;
-[rules_cloudrun](https://github.com/justinswe/rules_cloudrun) validates it at build time and pins the image digest.
-After the release step, CI runs `//:installer_image_push` and `//:installer_deploy`, then checks that
-`https://speedtest.ju2tin.dev` serves the new version.
-
-One-time setup, after the first deploy creates the service:
-
-```sh
-gcloud run services add-iam-policy-binding fast-installer --region=us-west1 --project=justin-dev-00 \
-  --member=allUsers --role=roles/run.invoker
-gcloud beta run domain-mappings create --service=fast-installer --domain=speedtest.ju2tin.dev \
-  --region=us-west1 --project=justin-dev-00
-```
-
-Point `speedtest.ju2tin.dev` at the record the mapping returns (DNS only, not proxied).
+The endpoint image is built with Bazel from a digest-pinned distroless static base and runs on Cloud Run as defined in
+[`installer/manifest.yaml`](installer/manifest.yaml). The `main` workflow deploys it after the release step.
 
 ## Usage
 

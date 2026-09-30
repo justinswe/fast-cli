@@ -23,8 +23,5 @@ actions:
     steps:
       - run: env -u GITHUB_RELEASE_TOKEN -u GCP_DEPLOYER_KEY bazel test --config=rbe --config=ci //...
       - run: env -u GITHUB_RELEASE_TOKEN -u GCP_DEPLOYER_KEY bazel build --config=rbe --config=ci --remote_download_outputs=all //:release_version //:fast_linux_amd64 //:fast_linux_arm64 //:fast_darwin_amd64 //:fast_darwin_arm64 //:installer_image //:installer_service.render
-      - run: |
-          set -euo pipefail
-          set +x
-          env -u GCP_DEPLOYER_KEY python3 tools/release.py --publish
+      - run: env -u GCP_DEPLOYER_KEY python3 tools/release.py --publish
       - run: env -u GITHUB_RELEASE_TOKEN tools/deploy.sh
