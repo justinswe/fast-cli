@@ -14,12 +14,22 @@ The installer selects the GitHub Release binary for Linux or macOS on amd64 or a
 release's `SHA256SUMS`, and runs `fast`. By default it installs to `~/.local/bin/fast` without elevated permissions.
 `--no-install` runs from a private temporary directory and removes the binary afterward.
 
-```sh
-`curl -fsSL https://speedtest.ju2tin.dev | bash`
+Install and run:
 
-Only Speedtest; No install
-`curl -fsSL https://speedtest.ju2tin.dev | bash -s -- --no-install`
-`curl -fsSL https://speedtest.ju2tin.dev | bash -s -- --no-install -- --upload`
+```sh
+curl -fsSL https://speedtest.ju2tin.dev | bash
+```
+
+Run once without installing:
+
+```sh
+curl -fsSL https://speedtest.ju2tin.dev | bash -s -- --no-install
+```
+
+Run once without installing, including upload:
+
+```sh
+curl -fsSL https://speedtest.ju2tin.dev | bash -s -- --no-install -- --upload
 ```
 
 The `--` after `--no-install` separates installer options from `fast` options. If `~/.local/bin` is not on `PATH`,
